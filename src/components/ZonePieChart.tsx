@@ -97,6 +97,13 @@ export function ZonePieChart({ trades, zoneDistribution }: Props) {
     percentual: totalBuyVolume === 0 ? 0 : soma / totalBuyVolume,
   }));
 
+  const performance24hPorZona = zones.map((zone) => {
+    const soma = trades
+      .filter((t) => t.zone === zone)
+      .reduce((acc, t) => acc + t.performance_24, 0);
+    return { zone, valor: soma };
+  });
+
   return (
     <div className="flex flex-col items-center gap-8 w-full">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -188,7 +195,7 @@ export function ZonePieChart({ trades, zoneDistribution }: Props) {
                 <Area
                   type="monotone"
                   dataKey="valor"
-                  name="percentage sum"
+                  name="performance sum"
                   stroke="#ed8936"
                   fill="#fbd38d"
                 />
@@ -197,20 +204,20 @@ export function ZonePieChart({ trades, zoneDistribution }: Props) {
           </div>
 
           <div>
-            <h3 className="text-center mb-2">USDT (Buys+Sells)</h3>
+            <h3 className="text-center mb-2">Crypto 24-Hour Performance</h3>
             <ResponsiveContainer width={300} height={300}>
-              <AreaChart data={quoteVolumePorZona}>
+              <AreaChart data={performance24hPorZona}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="zone" />
-                <YAxis domain={[0, 1]} tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} />
-                <Tooltip formatter={(v: number) => `${(v * 100).toFixed(2)}%`} />
+                <YAxis />
+                <Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
                 <Legend />
                 <Area
                   type="monotone"
-                  dataKey="percentual"
-                  name="percentage of volume"
-                  stroke="#9f7aea"
-                  fill="#d6bcfa"
+                  dataKey="valor"
+                  name="performance sum"
+                  stroke="#68d391"
+                  fill="#c6f6d5"
                 />
               </AreaChart>
             </ResponsiveContainer>

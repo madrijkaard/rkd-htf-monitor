@@ -30,13 +30,11 @@ export function TradeTable({ trades }: Props) {
   const max = {
     performance_24: Math.max(...trades.map((t) => t.performance_24)),
     performance_btc_24: Math.max(...trades.map((t) => t.performance_btc_24)),
-    amplitude_ma_200: Math.max(...trades.map((t) => t.amplitude_ma_200)),
   };
 
   const min = {
     performance_24: Math.min(...trades.map((t) => t.performance_24)),
     performance_btc_24: Math.min(...trades.map((t) => t.performance_btc_24)),
-    amplitude_ma_200: Math.min(...trades.map((t) => t.amplitude_ma_200)),
   };
 
   const highlight = (value: number, field: keyof typeof max) => {
@@ -47,6 +45,18 @@ export function TradeTable({ trades }: Props) {
     return '';
   };
 
+  const renderPressureArrow = (trade: Trade) => {
+    if (trade.volume === 0) return '';
+    const buyPressure = trade.taker_buy_base_volume / trade.volume;
+
+    if (buyPressure > 0.7) return <span className="text-yellow-400">↑</span>;  // alta compra
+    if (buyPressure > 0.5) return <span className="text-blue-500">↑</span>;    // compra
+    if (buyPressure < 0.3) return <span className="text-gray-400">↓</span>;    // alta venda
+    if (buyPressure < 0.5) return <span className="text-red-500">↓</span>;     // venda
+
+    return ''; // 50% exato
+  };
+
   return (
     <>
       <div className="rounded-xl shadow-lg bg-white dark:bg-black px-2 py-4 overflow-hidden">
@@ -55,7 +65,7 @@ export function TradeTable({ trades }: Props) {
             <table className="table-auto w-fit min-w-[900px] text-base text-gray-800 dark:text-gray-100">
               <thead>
                 <tr className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase text-xs tracking-wider">
-                  {['Symbol', 'Zone', '24h', 'BTC', 'MA200'].map((header) => (
+                  {['Symbol', 'Zone', '24h', 'BTC', 'Pressure'].map((header) => (
                     <th key={header} className="px-5 py-3 text-left whitespace-nowrap">
                       {header}
                     </th>
@@ -63,9 +73,9 @@ export function TradeTable({ trades }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {trades.map((t) => (
+                {trades.map((t, i) => (
                   <tr
-                    key={t.symbol + t.zone}
+                    key={`${t.symbol}-${t.zone}-${i}`}
                     className="cursor-pointer even:bg-gray-50 dark:even:bg-gray-900 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
                     onClick={() => setSelectedTrade(t)}
                   >
@@ -77,8 +87,8 @@ export function TradeTable({ trades }: Props) {
                     <td className={`px-5 py-3 font-mono ${highlight(t.performance_btc_24, 'performance_btc_24')}`}>
                       {t.performance_btc_24.toFixed(2)}
                     </td>
-                    <td className={`px-5 py-3 font-mono ${highlight(t.amplitude_ma_200, 'amplitude_ma_200')}`}>
-                      {t.amplitude_ma_200.toFixed(2)}
+                    <td className="py-3 text-xl text-center w-[80px]">
+                      {renderPressureArrow(t)}
                     </td>
                   </tr>
                 ))}
@@ -100,11 +110,14 @@ export function TradeTable({ trades }: Props) {
 
             <h2 className="text-xl font-bold mb-4">Detalhes de {selectedTrade.symbol}</h2>
 
-            {/* Somente os campos desejados */}
             <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200 mb-6">
               <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
                 <span className="font-medium">symbol:</span>
                 <span>{selectedTrade.symbol}</span>
+              </li>
+              <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
+                <span className="font-medium">zone:</span>
+                <span>{selectedTrade.zone}</span>
               </li>
               <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
                 <span className="font-medium">amplitude:</span>
@@ -114,9 +127,12 @@ export function TradeTable({ trades }: Props) {
                 <span className="font-medium">position:</span>
                 <span>{(selectedTrade.log_position * 100).toFixed(2)}%</span>
               </li>
+              <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
+                <span className="font-medium">MA200:</span>
+                <span>{selectedTrade.amplitude_ma_200.toFixed(2)}%</span>
+              </li>
             </ul>
 
-            {/* Gráfico de pizza */}
             <div className="flex flex-col items-center">
               <h3 className="text-md font-semibold mb-2 text-gray-800 dark:text-gray-100">
                 Buyer vs. Seller Pressure
@@ -146,8 +162,8 @@ export function TradeTable({ trades }: Props) {
                   outerRadius={80}
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
                 >
-                  <Cell fill="#2b6cb0" /> {/* Buyer - azul */}
-                  <Cell fill="#e53e3e" /> {/* Seller - vermelho */}
+                  <Cell fill="#2b6cb0" />
+                  <Cell fill="#e53e3e" />
                 </Pie>
                 <Tooltip formatter={(v: number) => `${(v * 100).toFixed(2)}%`} />
               </PieChart>

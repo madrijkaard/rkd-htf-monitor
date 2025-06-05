@@ -16,6 +16,12 @@ interface Trade {
   trades_count: number;
   taker_buy_base_volume: number;
   taker_buy_quote_volume: number;
+  logo?: string;
+  name?: string;
+  description?: string;
+  date_added?: string;
+  website?: string;
+  technical_doc?: string;
 }
 
 interface Props {
@@ -111,6 +117,20 @@ export function TradeTable({ trades }: Props) {
             <h2 className="text-xl font-bold mb-4">Detalhes de {selectedTrade.symbol}</h2>
 
             <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200 mb-6">
+              {selectedTrade.logo && (
+                <li className="flex justify-center">
+                  <img src={selectedTrade.logo} alt="logo" className="h-10" />
+                </li>
+              )}
+              {selectedTrade.name && (
+                <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
+                  <span className="font-medium">name:</span>
+                  <span>{selectedTrade.name}</span>
+                </li>
+              )}
+              {selectedTrade.description && (
+                <li className="text-justify text-xs text-gray-600 dark:text-gray-300">{selectedTrade.description}</li>
+              )}
               <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
                 <span className="font-medium">symbol:</span>
                 <span>{selectedTrade.symbol}</span>
@@ -131,6 +151,28 @@ export function TradeTable({ trades }: Props) {
                 <span className="font-medium">MA200:</span>
                 <span>{selectedTrade.amplitude_ma_200.toFixed(2)}%</span>
               </li>
+              {selectedTrade.date_added && (
+                <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
+                  <span className="font-medium">added:</span>
+                  <span>{selectedTrade.date_added}</span>
+                </li>
+              )}
+              {selectedTrade.website && (
+                <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
+                  <span className="font-medium">site:</span>
+                  <a href={selectedTrade.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                    {selectedTrade.website}
+                  </a>
+                </li>
+              )}
+              {selectedTrade.technical_doc && (
+                <li className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
+                  <span className="font-medium">documento:</span>
+                  <a href={selectedTrade.technical_doc} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                    whitepaper
+                  </a>
+                </li>
+              )}
             </ul>
 
             <div className="flex flex-col items-center">
